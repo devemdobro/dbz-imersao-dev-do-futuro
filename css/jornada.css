@@ -1,38 +1,29 @@
 /* ── Tokens da Jornada (A Saga) ── */
 :root {
   --jornada-gap: clamp(1.5rem, 4vw, 3rem);
-  --jornada-panel-width: clamp(18rem, 28vw, 26rem);
+  --jornada-panel-width: clamp(22rem, 56vw, 34rem);
   --jornada-card-radius: 1rem;
   --jornada-media-ratio: 16 / 10;
   --jornada-media-radius: 0.75rem;
   --jornada-desc-maxw: 38ch;
   --jornada-rail-weight: 2px;
-  --jornada-dot-size: clamp(1.35rem, 2.64vw, 1.95rem);
+  --jornada-node-size: clamp(1.35rem, 2.64vw, 1.95rem);
   --jornada-hud-maxw: min(56rem, calc(100% - var(--space-gutter-x) * 2));
   --jornada-numeral-opacity: 0.28;
-  --jornada-numeral-size: clamp(4.5rem, 11vw, 7.5rem);
-  --jornada-numeral-size-mobile: clamp(4rem, 18vw, 7rem);
+  --jornada-numeral-size: clamp(4rem, 11vw, 7.5rem);
   --jornada-kanji-opacity: 0.04;
-  --jornada-scrub-lerp: 1;
-  --jornada-reveal-y: 1.5rem;
-  --jornada-timeline-mobile: none;
   --jornada-fs-heading: clamp(1.25rem, 2.2vw, 1.75rem);
   --jornada-fs-desc: clamp(0.8125rem, 1.1vw, 0.9375rem);
   --jornada-fs-counter: clamp(1rem, 1.8vw, 1.375rem);
-  --stagger-sm: 0.06s;
-  --stagger-md: 0.12s;
-  --stagger-lg: 0.18s;
   --space-section-y: clamp(3rem, 8vh, 5rem);
 }
 
 /* ── Seção ── */
 #saga.jornada {
   position: relative;
-  isolation: isolate;
-  overflow-x: clip;
 }
 
-.jornada__pin {
+.jornada__viewport {
   position: relative;
   background-color: var(--bg-mid);
   background:
@@ -59,7 +50,7 @@
     );
 }
 
-.jornada__pin::before {
+.jornada__viewport::before {
   content: "ナメック";
   position: absolute;
   inset: 0;
@@ -77,71 +68,41 @@
   user-select: none;
 }
 
-.jornada__pin--pinned {
-  z-index: 10;
-}
-
-/* ── HUD ── */
-.jornada__hud {
-  display: var(--jornada-timeline-mobile);
-}
-
-.jornada__rail {
-  position: relative;
-  isolation: isolate;
-  height: var(--jornada-rail-weight);
-  margin-bottom: calc(var(--jornada-dot-size) * 0.5);
-  border-radius: 9999px;
-  background: var(--accent-star-dim);
-}
-
-.jornada__fill {
+.jornada__atmos {
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, color-mix(in srgb, var(--cosmic-purple) 18%, transparent), transparent 60%),
+    radial-gradient(ellipse 90% 60% at 100% 100%, color-mix(in srgb, var(--cosmic-cyan) 12%, transparent), transparent 55%);
+  box-shadow: inset 0 0 120px color-mix(in srgb, var(--bg-deep) 55%, transparent);
+}
+
+/* ── HUD (visível só no modo horizontal) ── */
+.jornada__hud {
+  display: none;
+}
+
+.jornada__progress {
+  position: relative;
+  height: var(--jornada-rail-weight);
+  border-radius: 9999px;
+  background: var(--accent-star-dim);
+  overflow: hidden;
+}
+
+.jornada__progress-fill {
+  position: absolute;
+  inset: 0;
   border-radius: inherit;
   background: var(--accent-star);
   transform-origin: left center;
-  transform: scaleX(var(--progress, 0));
-  will-change: transform;
-}
-
-.jornada__dot {
-  position: absolute;
-  top: 50%;
-  z-index: 2;
-  width: var(--jornada-dot-size);
-  height: var(--jornada-dot-size);
-  border-radius: 50%;
-  background: url("../assets/images/esfera-dragao-1estrela.webp") center / contain no-repeat;
-  transform: translate(-50%, -50%);
-}
-
-.jornada__dot:nth-child(2) {
-  left: 0%;
-}
-
-.jornada__dot:nth-child(3) {
-  left: 20%;
-}
-
-.jornada__dot:nth-child(4) {
-  left: 40%;
-}
-
-.jornada__dot:nth-child(5) {
-  left: 60%;
-}
-
-.jornada__dot:nth-child(6) {
-  left: 80%;
-}
-
-.jornada__dot:nth-child(7) {
-  left: 100%;
+  transform: scaleX(0);
 }
 
 .jornada__counter {
+  margin: 0;
   font-family: var(--font-display);
   font-size: var(--jornada-fs-counter);
   font-weight: 600;
@@ -150,63 +111,18 @@
   color: var(--text-faint);
 }
 
-.jornada__counter .cur {
+.jornada__counter [data-counter] {
   color: var(--accent-star);
 }
 
-/* ── Wrapper + numeral acima do card ── */
-.jornada__card-wrap {
-  position: relative;
-  display: flex;
-  flex: 0 0 auto;
-  width: 100%;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(0.35rem, 1vw, 0.625rem);
-  opacity: 0;
-  transform: translateY(var(--jornada-reveal-y));
-  transition:
-    opacity 0.65s var(--ease-out-expo),
-    transform 0.65s var(--ease-out-expo);
-  will-change: opacity, transform;
+.jornada__counter [data-counter].is-pulse {
+  animation: jornada-counter-pop 0.42s var(--ease-spring);
 }
 
-.jornada__card-wrap[data-reveal="in"] {
-  opacity: 1;
-  transform: none;
-}
-
-.jornada__numeral {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--font-hero-stamp);
-  font-size: var(--jornada-numeral-size-mobile);
-  font-weight: 400;
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  color: var(--ch-accent);
-  opacity: var(--jornada-numeral-opacity);
-  pointer-events: none;
-  user-select: none;
-}
-
-.jornada__numeral::before {
-  content: "";
-  display: block;
-  width: 2px;
-  height: clamp(0.625rem, 1.5vh, 1rem);
-  margin-bottom: 0.25rem;
-  border-radius: 1px;
-  background: var(--ch-accent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--ch-accent) 55%, transparent);
-  opacity: 0.85;
-}
-
-/* ── Track ── */
+/* ── Trilho ── */
 .jornada__track {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -218,14 +134,20 @@
     max(var(--space-gutter-x), env(safe-area-inset-right, 0px));
 }
 
-/* ── Painel Hero ── */
-.jornada__panel--hero {
+.jornada__rail {
+  display: none;
+}
+
+/* ── Painéis ── */
+.jornada__panel {
   position: relative;
-  display: flex;
   flex: 0 0 auto;
+}
+
+.jornada__intro {
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-height: auto;
   padding:
     clamp(5rem, 12vh, 6.5rem) 0 clamp(1.5rem, 4vw, 2rem);
   overflow: hidden;
@@ -251,7 +173,6 @@
   z-index: 1;
   display: flex;
   width: 100%;
-  min-height: auto;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -313,29 +234,49 @@
   display: inline-flex;
   align-items: center;
   gap: 0.625rem;
-  margin-top: clamp(0.5rem, 2vh, 1rem);
+  margin: clamp(0.5rem, 2vh, 1rem) 0 0;
   font-family: var(--font-hero-saga);
   font-size: var(--fs-2xs);
   font-weight: 400;
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  text-decoration: none;
   color: var(--text-muted);
 }
 
 .jornada__scroll-arrow {
   display: inline-block;
   color: var(--accent-star);
-  animation: jornada-scroll-bob 2.4s var(--ease-out-expo) infinite;
 }
 
-/* ── Cards de capítulo ── */
+/* ── Capítulos (layout vertical padrão) ── */
+.jornada__chapter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.35rem, 1vw, 0.625rem);
+}
+
+.jornada__num {
+  font-family: var(--font-hero-stamp);
+  font-size: var(--jornada-numeral-size);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--ch-accent);
+  opacity: var(--jornada-numeral-opacity);
+  pointer-events: none;
+  user-select: none;
+}
+
+.jornada__node {
+  display: none;
+}
+
 .jornada__card {
   position: relative;
   display: flex;
   width: 100%;
   max-width: 42rem;
-  margin-inline: auto;
   flex-direction: column;
   gap: clamp(0.75rem, 1.5vw, 1rem);
   padding: clamp(1rem, 3vw, 1.125rem);
@@ -346,22 +287,6 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   overflow: hidden;
-}
-
-.jornada__card-wrap[data-reveal="in"] .jornada__card-media {
-  animation: jornada-card-part-in 0.7s var(--ease-out-expo) both;
-}
-
-.jornada__card-wrap[data-reveal="in"] .jornada__card-kicker {
-  animation: jornada-card-part-in 0.7s var(--ease-out-expo) var(--stagger-sm) both;
-}
-
-.jornada__card-wrap[data-reveal="in"] .jornada__card-title {
-  animation: jornada-card-part-in 0.7s var(--ease-out-expo) var(--stagger-md) both;
-}
-
-.jornada__card-wrap[data-reveal="in"] .jornada__card-desc {
-  animation: jornada-card-part-in 0.7s var(--ease-out-expo) var(--stagger-lg) both;
 }
 
 .jornada__card-media {
@@ -408,8 +333,143 @@
   color: var(--text-muted);
 }
 
+/* ── Modo horizontal (ativado via .is-horizontal no JS) ── */
+.jornada.is-horizontal .jornada__viewport {
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.jornada.is-horizontal .jornada__hud {
+  position: absolute;
+  top: var(--floating-nav-offset);
+  left: 50%;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  width: 100%;
+  max-width: var(--jornada-hud-maxw);
+  padding-inline: var(--space-gutter-x);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.jornada.is-horizontal .jornada__track {
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%;
+  min-height: 100%;
+  gap: var(--jornada-gap);
+  padding: 0;
+}
+
+.jornada.is-horizontal .jornada__rail {
+  display: block;
+  position: absolute;
+  top: calc(50% + clamp(2.5rem, 6vh, 3.5rem));
+  left: 0;
+  right: 0;
+  z-index: 0;
+  height: var(--jornada-rail-weight);
+  background: var(--accent-star-dim);
+  pointer-events: none;
+}
+
+.jornada.is-horizontal .jornada__intro {
+  flex: 0 0 100vw;
+  align-self: stretch;
+  height: 100%;
+  min-height: 100%;
+  padding:
+    clamp(4.5rem, 10vh, 6rem) var(--space-gutter-x);
+}
+
+.jornada.is-horizontal .jornada__kanji {
+  font-size: clamp(12rem, 38vw, 28rem);
+}
+
+.jornada.is-horizontal .jornada__hero-copy {
+  min-height: 100%;
+}
+
+.jornada.is-horizontal .jornada__title .line--main,
+.jornada.is-horizontal .jornada__title .line--saga {
+  font-size: clamp(2rem, 7vw, 4.5rem);
+}
+
+.jornada.is-horizontal .jornada__chapter {
+  flex: 0 0 var(--jornada-panel-width);
+  align-self: center;
+  justify-content: flex-start;
+  padding-top: clamp(3rem, 8vh, 4.5rem);
+}
+
+.jornada.is-horizontal .jornada__num {
+  font-size: clamp(4.5rem, 11vw, 7.5rem);
+  opacity: 0;
+  transition: opacity 0.7s var(--ease-out-expo);
+}
+
+.jornada.is-horizontal .jornada__node {
+  display: block;
+  position: relative;
+  z-index: 2;
+  width: var(--jornada-node-size);
+  height: var(--jornada-node-size);
+  margin-block: 0.5rem;
+  border-radius: 50%;
+  background: url("../assets/images/esfera-dragao-1estrela.webp") center / contain no-repeat;
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 0.6s var(--ease-out-expo),
+    transform 0.6s var(--ease-spring);
+}
+
+.jornada.is-horizontal .jornada__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  opacity: 0;
+  transform: translateY(30px);
+  transition:
+    opacity 0.7s var(--ease-out-expo),
+    transform 0.7s var(--ease-out-expo);
+}
+
+.jornada.is-horizontal .jornada__chapter.is-inview .jornada__num {
+  opacity: 0.16;
+}
+
+.jornada.is-horizontal .jornada__chapter.is-inview .jornada__node {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.jornada.is-horizontal .jornada__chapter.is-inview .jornada__card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ── Keyframes ── */
-@keyframes jornada-scroll-bob {
+@keyframes jornada-counter-pop {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes jornada-cue-arrow {
 
   0%,
   100% {
@@ -421,138 +481,27 @@
   }
 }
 
-@keyframes jornada-card-part-in {
-  from {
-    opacity: 0;
-    transform: translateY(0.75rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* ── Mobile: coluna vertical ── */
-@media (max-width: 768px) {
-  .jornada__card-wrap {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-/* ── Desktop: pin + trilho horizontal (§6.1) ── */
-@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
-  .jornada__pin {
-    height: 100vh;
-    height: 100svh;
-    overflow: hidden;
-  }
-
-  .jornada__hud {
-    position: absolute;
-    top: var(--floating-nav-offset);
-    left: 50%;
-    z-index: 10;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: clamp(0.75rem, 2vw, 1.25rem);
-    width: 100%;
-    max-width: var(--jornada-hud-maxw);
-    padding-inline: var(--space-gutter-x);
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
-
-  .jornada__rail {
-    margin-bottom: calc(var(--jornada-dot-size) * 0.5);
-  }
-
-  .jornada__dot {
-    opacity: 0.55;
-    filter: grayscale(0.25);
-    transition:
-      opacity 0.3s var(--ease-out-expo),
-      filter 0.3s var(--ease-out-expo),
-      transform 0.3s var(--ease-out-expo);
-  }
-
-  .jornada__dot[data-active] {
-    opacity: 1;
-    filter: drop-shadow(0 0 10px var(--accent-star-glow));
-    transform: translate(-50%, -50%) scale(1.12);
-  }
-
-  .jornada__numeral {
-    font-size: var(--jornada-numeral-size);
-  }
-
-  .jornada__track {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--jornada-gap);
-    height: 100%;
-    padding: 0;
-    will-change: transform;
-    transform: translate3d(var(--x, 0), 0, 0);
-  }
-
-  .jornada__panel--hero {
-    flex: 0 0 100vw;
-    min-height: 100vh;
-    min-height: 100svh;
-    padding:
-      clamp(4.5rem, 10vh, 6rem) var(--space-gutter-x);
-  }
-
-  .jornada__kanji {
-    font-size: clamp(12rem, 38vw, 28rem);
-  }
-
-  .jornada__hero-copy {
-    min-height: 100%;
-  }
-
-  .jornada__title .line--main,
-  .jornada__title .line--saga {
-    font-size: clamp(2rem, 7vw, 4.5rem);
-  }
-
-  .jornada__card-wrap {
-    flex: 0 0 var(--jornada-panel-width);
-    width: auto;
-    max-width: none;
-    opacity: 0;
-    transform: translateY(var(--jornada-reveal-y));
-  }
-
-  .jornada__card {
-    max-width: none;
-    margin-inline: 0;
-    padding: clamp(0.875rem, 1.5vw, 1.125rem);
+@media (prefers-reduced-motion: no-preference) {
+  .jornada.is-horizontal .jornada__cue-arrow {
+    animation: jornada-cue-arrow 1.3s ease-in-out infinite;
   }
 }
 
 /* ── Reduced motion ── */
 @media (prefers-reduced-motion: reduce) {
-  .jornada__scroll-arrow {
+  .jornada.is-horizontal .jornada__cue-arrow {
     animation: none;
   }
 
-  .jornada__card-wrap,
-  .jornada__card-wrap[data-reveal="in"] .jornada__card-media,
-  .jornada__card-wrap[data-reveal="in"] .jornada__card-kicker,
-  .jornada__card-wrap[data-reveal="in"] .jornada__card-title,
-  .jornada__card-wrap[data-reveal="in"] .jornada__card-desc {
+  .jornada.is-horizontal .jornada__num,
+  .jornada.is-horizontal .jornada__node,
+  .jornada.is-horizontal .jornada__card {
     opacity: 1;
     transform: none;
-    animation: none;
     transition: none;
   }
 
-  .jornada__track,
-  .jornada__fill {
-    will-change: auto;
+  .jornada__counter [data-counter].is-pulse {
+    animation: none;
   }
 }

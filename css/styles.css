@@ -528,6 +528,7 @@ body {
   --trailers-slide-ease: var(--ease-out-expo);
 
   position: relative;
+  z-index: 1;
   isolation: isolate;
   overflow: hidden;
   padding:

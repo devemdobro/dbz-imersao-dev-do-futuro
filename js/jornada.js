@@ -1,184 +1,278 @@
-function initJornada() {
-    const section = document.getElementById("saga");
-    const pin = section?.querySelector(".jornada__pin");
-    const track = section?.querySelector(".jornada__track");
-    const counterCur = section?.querySelector(".jornada__counter .cur");
-    const dots = pin ? Array.from(pin.querySelectorAll(".jornada__dot")) : [];
-    const cardWraps = section
-        ? Array.from(section.querySelectorAll(".jornada__card-wrap"))
-        : [];
-
-    if (!section || !pin || !track) {
-        return;
-    }
-
-    function revealAllCards() {
-        cardWraps.forEach(function (wrap) {
-            wrap.setAttribute("data-reveal", "in");
-        });
-    }
-
-    function resetDesktopCards() {
-        cardWraps.forEach(function (wrap) {
-            wrap.removeAttribute("data-reveal");
-        });
-    }
-
-    function clearRuntimeStyles() {
-        track.style.removeProperty("--x");
-        pin.style.removeProperty("--progress");
-        pin.classList.remove("jornada__pin--pinned");
-    }
-
-    function setPinLayer(active) {
-        pin.classList.toggle("jornada__pin--pinned", active);
-    }
-
-    function readToken(name, fallback) {
-        const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-        const value = parseFloat(raw);
-        return Number.isFinite(value) ? value : fallback;
-    }
-
-    function getScrubLerp() {
-        return readToken("--jornada-scrub-lerp", 1);
-    }
-
-    function getMaxScroll() {
-        return Math.max(0, track.scrollWidth - window.innerWidth);
-    }
-
-    function padChapter(n) {
-        return String(n).padStart(2, "0");
-    }
-
-    function updateHUD(progress) {
-        const clamped = gsap.utils.clamp(0, 1, progress);
-        pin.style.setProperty("--progress", String(clamped));
-
-        const chapter = Math.min(6, Math.max(1, Math.floor(clamped * 6) + 1));
-
-        if (counterCur) {
-            counterCur.textContent = padChapter(chapter);
+(function () {
+    function initJornadaVideoPingPong(section) {
+        const video = section.querySelector(".jornada__video");
+        if (!video) {
+            return;
         }
 
-        dots.forEach(function (dot) {
-            const dotChapter = Number(dot.dataset.chapter);
-            if (dotChapter === chapter) {
-                dot.setAttribute("data-active", "");
-            } else {
-                dot.removeAttribute("data-active");
+        video.loop = false;
+        video.muted = true;
+
+        let rafId = null;
+        let reversing = false;
+        let lastTime = 0;
+
+        function cancelRaf() {
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
             }
-        });
-    }
+        }
 
-    function refreshJornadaLayout(scrollTween) {
-        scrollTween?.scrollTrigger?.refresh();
-    }
+        function playForward() {
+            reversing = false;
+            cancelRaf();
+            video.play().catch(function () {});
+        }
 
-    function watchLayoutAssets(scrollTween) {
-        const images = section.querySelectorAll("img");
-        let pending = 0;
-
-        images.forEach(function (img) {
-            if (img.complete) {
+        function reverseStep(timestamp) {
+            if (!reversing) {
                 return;
             }
-            pending += 1;
-            img.addEventListener("load", onAssetDone, { once: true });
-            img.addEventListener("error", onAssetDone, { once: true });
-        });
 
-        function onAssetDone() {
-            pending -= 1;
-            if (pending <= 0) {
-                refreshJornadaLayout(scrollTween);
+            if (!lastTime) {
+                lastTime = timestamp;
             }
+
+            const delta = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            video.currentTime = Math.max(0, video.currentTime - delta);
+
+            if (video.currentTime <= 0) {
+                reversing = false;
+                cancelRaf();
+                playForward();
+                return;
+            }
+
+            rafId = requestAnimationFrame(reverseStep);
         }
 
-        if (document.fonts?.ready) {
-            document.fonts.ready.then(function () {
-                refreshJornadaLayout(scrollTween);
-            });
+        function startReverse() {
+            reversing = true;
+            lastTime = 0;
+            video.pause();
+            rafId = requestAnimationFrame(reverseStep);
         }
 
-        window.addEventListener("load", function () {
-            refreshJornadaLayout(scrollTween);
-        }, { once: true });
+        video.addEventListener("ended", startReverse);
+
+        const observer = new IntersectionObserver(
+            function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        if (!reversing && video.paused) {
+                            playForward();
+                        }
+                    } else {
+                        reversing = false;
+                        cancelRaf();
+                        video.pause();
+                    }
+                });
+            },
+            { threshold: 0.25 }
+        );
+
+        observer.observe(video);
     }
 
-    if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
-        revealAllCards();
-        return;
-    }
+    function initJornada() {
+        const section = document.getElementById("saga");
+        if (!section) {
+            return;
+        }
 
-    gsap.registerPlugin(ScrollTrigger);
+        initJornadaVideoPingPong(section);
 
-    const mm = gsap.matchMedia();
+        if (typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+            return;
+        }
 
-    mm.add("(max-width: 768px), (prefers-reduced-motion: reduce)", function () {
-        revealAllCards();
-        clearRuntimeStyles();
-        return function () {};
-    });
+        gsap.registerPlugin(ScrollTrigger);
 
-    mm.add("(min-width: 769px) and (prefers-reduced-motion: no-preference)", function () {
-        resetDesktopCards();
-        clearRuntimeStyles();
-        updateHUD(0);
+        const viewport = section.querySelector(".jornada__viewport");
+        const track = section.querySelector(".jornada__track");
+        const fill = section.querySelector(".jornada__progress-fill");
+        const counter = section.querySelector("[data-counter]");
+        const intro = section.querySelector(".jornada__intro");
+        const chapters = Array.from(section.querySelectorAll(".jornada__chapter"));
+        const video = section.querySelector(".jornada__video");
 
-        const revealTriggers = [];
+        if (!viewport || !track) {
+            return;
+        }
 
-        const scrollTween = gsap.to(track, {
-            "--x": function () {
-                return "-" + getMaxScroll() + "px";
-            },
-            ease: "none",
-            scrollTrigger: {
-                trigger: section,
-                pin: pin,
-                scrub: getScrubLerp(),
-                start: "top top",
-                end: function () {
-                    return "+=" + getMaxScroll();
-                },
-                invalidateOnRefresh: true,
-                refreshPriority: 10,
-                id: "jornada-horizontal",
-                onToggle: function (self) {
-                    setPinLayer(self.isActive);
-                },
-                onUpdate: function (self) {
-                    updateHUD(self.progress);
-                },
-            },
-        });
+        const mm = gsap.matchMedia();
 
-        cardWraps.forEach(function (wrap) {
-            revealTriggers.push(
-                ScrollTrigger.create({
-                    containerAnimation: scrollTween,
-                    trigger: wrap,
-                    start: "left 88%",
-                    once: true,
-                    onEnter: function () {
-                        wrap.setAttribute("data-reveal", "in");
+        mm.add(
+            "(min-width: 768px) and (min-height: 600px) and (prefers-reduced-motion: no-preference)",
+            function () {
+                section.classList.add("is-horizontal");
+
+                function distance() {
+                    return Math.max(0, track.scrollWidth - viewport.clientWidth);
+                }
+
+                const tween = gsap.to(track, {
+                    x: function () {
+                        return -distance();
                     },
-                })
-            );
-        });
+                    ease: "none",
+                });
 
-        watchLayoutAssets(scrollTween);
-        refreshJornadaLayout(scrollTween);
-        setPinLayer(Boolean(scrollTween.scrollTrigger?.isActive));
+                let chapterBounds = [];
+                let lastChapter = null;
 
-        return function () {
-            revealTriggers.forEach(function (trigger) {
-                trigger.kill();
-            });
-            scrollTween.scrollTrigger?.kill();
-            scrollTween.kill();
-            clearRuntimeStyles();
-        };
-    });
-}
+                function measureChapters() {
+                    chapterBounds = chapters.map(function (chapter) {
+                        return {
+                            chapter: Number(chapter.dataset.chapter),
+                            left: chapter.offsetLeft,
+                            right: chapter.offsetLeft + chapter.offsetWidth,
+                        };
+                    });
+                }
+
+                function resolveChapter(progress) {
+                    const center = progress * distance() + viewport.clientWidth / 2;
+                    let active = chapterBounds[0]?.chapter ?? 1;
+
+                    chapterBounds.forEach(function (bound) {
+                        if (center >= bound.left && center < bound.right) {
+                            active = bound.chapter;
+                        } else if (center >= bound.right) {
+                            active = bound.chapter;
+                        }
+                    });
+
+                    return active;
+                }
+
+                function updateHUD(progress) {
+                    if (fill) {
+                        fill.style.transform = "scaleX(" + progress + ")";
+                    }
+
+                    const active = resolveChapter(progress);
+
+                    if (!counter || active === lastChapter) {
+                        return;
+                    }
+
+                    lastChapter = active;
+                    counter.textContent = ("0" + active).slice(-2);
+                    counter.classList.remove("is-pulse");
+                    void counter.offsetWidth;
+                    counter.classList.add("is-pulse");
+                }
+
+                function onRefreshInit() {
+                    measureChapters();
+                }
+
+                ScrollTrigger.addEventListener("refreshInit", onRefreshInit);
+                measureChapters();
+
+                ScrollTrigger.create({
+                    animation: tween,
+                    trigger: viewport,
+                    start: "top top",
+                    end: function () {
+                        return "+=" + distance();
+                    },
+                    pin: true,
+                    scrub: 1,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                    onUpdate: function (self) {
+                        updateHUD(self.progress);
+                    },
+                });
+
+                chapters.forEach(function (chapter) {
+                    const num = chapter.querySelector(".jornada__num");
+                    if (num) {
+                        gsap.fromTo(
+                            num,
+                            { xPercent: 16 },
+                            {
+                                xPercent: -16,
+                                ease: "none",
+                                scrollTrigger: {
+                                    trigger: chapter,
+                                    containerAnimation: tween,
+                                    start: "left right",
+                                    end: "right left",
+                                    scrub: true,
+                                },
+                            }
+                        );
+                    }
+
+                    ScrollTrigger.create({
+                        trigger: chapter,
+                        containerAnimation: tween,
+                        start: "left 78%",
+                        onEnter: function () {
+                            chapter.classList.add("is-inview");
+                        },
+                        onEnterBack: function () {
+                            chapter.classList.add("is-inview");
+                        },
+                    });
+                });
+
+                if (intro) {
+                    gsap.from(intro.children, {
+                        y: 30,
+                        opacity: 0,
+                        filter: "blur(8px)",
+                        duration: 0.8,
+                        stagger: 0.1,
+                        ease: "power3.out",
+                        scrollTrigger: {
+                            trigger: section,
+                            start: "top 70%",
+                            once: true,
+                        },
+                    });
+                }
+
+                function refreshLayout() {
+                    ScrollTrigger.refresh();
+                }
+
+                window.addEventListener("load", refreshLayout, { once: true });
+
+                if (video) {
+                    video.addEventListener("loadedmetadata", refreshLayout);
+                }
+
+                updateHUD(0);
+
+                return function () {
+                    ScrollTrigger.removeEventListener("refreshInit", onRefreshInit);
+                    section.classList.remove("is-horizontal");
+                    chapters.forEach(function (chapter) {
+                        chapter.classList.remove("is-inview");
+                    });
+
+                    if (fill) {
+                        fill.style.transform = "";
+                    }
+
+                    if (counter) {
+                        counter.classList.remove("is-pulse");
+                        counter.textContent = "01";
+                    }
+
+                    lastChapter = null;
+                    gsap.set(track, { clearProps: "transform" });
+                };
+            }
+        );
+    }
+
+    window.initJornada = initJornada;
+})();

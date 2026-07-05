@@ -140,22 +140,20 @@
 
 
         <section id="saga" class="jornada" aria-label="A Saga do Freeza">
-            <div class="jornada__pin">
-                <div class="jornada__hud" aria-hidden="true">
-                    <div class="jornada__rail">
-                        <div class="jornada__fill"></div>
-                        <span class="jornada__dot" data-chapter="1" data-active></span>
-                        <span class="jornada__dot" data-chapter="2"></span>
-                        <span class="jornada__dot" data-chapter="3"></span>
-                        <span class="jornada__dot" data-chapter="4"></span>
-                        <span class="jornada__dot" data-chapter="5"></span>
-                        <span class="jornada__dot" data-chapter="6"></span>
+            <div class="jornada__viewport">
+                <div class="jornada__atmos" aria-hidden="true"></div>
+
+                <header class="jornada__hud" aria-hidden="true">
+                    <div class="jornada__progress">
+                        <div class="jornada__progress-fill"></div>
                     </div>
-                    <p class="jornada__counter"><span class="cur">01</span>/06</p>
-                </div>
+                    <p class="jornada__counter"><span data-counter>01</span>/06</p>
+                </header>
 
                 <div class="jornada__track">
-                    <div class="jornada__panel--hero">
+                    <div class="jornada__rail" aria-hidden="true"></div>
+
+                    <div class="jornada__panel jornada__intro">
                         <span class="jornada__kanji" aria-hidden="true">龍</span>
 
                         <div class="jornada__hero-copy">
@@ -165,16 +163,18 @@
                                 <span class="line--saga">Freeza</span>
                             </h2>
                             <p class="jornada__tagline">A batalha que forjou uma lenda</p>
-                            <p class="jornada__scroll">
+                            <p class="jornada__scroll jornada__cue">
                                 <span>ROLE PARA ATRAVESSAR</span>
-                                <span class="jornada__scroll-arrow" aria-hidden="true">→</span>
+                                <span class="jornada__scroll-arrow jornada__cue-arrow" aria-hidden="true">→</span>
                             </p>
                         </div>
                     </div>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--cosmic-cyan);">
-                        <span class="jornada__numeral" aria-hidden="true">01</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="1"
+                        style="--ch-accent: var(--cosmic-cyan);">
+                        <span class="jornada__num" aria-hidden="true">01</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
                                 <img src="./assets/images/planete_namek_grande.webp"
                                     alt="Planeta Namekusei verde flutuando em um campo estelar" loading="lazy"
@@ -185,12 +185,14 @@
                             <p class="jornada__card-desc">Gohan, Kuririn e Bulma viajam até o distante planeta Namekusei
                                 em busca das Esferas do Dragão para reviver seus amigos — mas Freeza e seus soldados já
                                 estão lá com o mesmo objetivo.</p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--cosmic-purple);">
-                        <span class="jornada__numeral" aria-hidden="true">02</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="2"
+                        style="--ch-accent: var(--cosmic-purple);">
+                        <span class="jornada__num" aria-hidden="true">02</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
                                 <img src="./assets/images/GinyuTokusentai.webp"
                                     alt="Esquadrão Ginyu em pose de batalha com cinco membros" loading="lazy" width="800"
@@ -201,12 +203,14 @@
                             <p class="jornada__card-desc">Freeza convoca a temida força de elite. O Capitão Ginyu troca de
                                 corpo com Goku, e só a astúcia dos Guerreiros Z impede o desastre antes da chegada do
                                 verdadeiro perigo.</p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--accent-star);">
-                        <span class="jornada__numeral" aria-hidden="true">03</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="3"
+                        style="--ch-accent: var(--accent-star);">
+                        <span class="jornada__num" aria-hidden="true">03</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
                                 <img src="./assets/images/kuririn-morto-por-freeza-1200x720.webp"
                                     alt="Freeza e Kuririn no momento da morte de Kuririn" loading="lazy" width="800"
@@ -217,12 +221,14 @@
                             <p class="jornada__card-desc">No auge da batalha, Freeza assassina Kuririn diante de Goku. A
                                 perda do amigo de toda uma vida acende uma fúria capaz de despertar uma lenda adormecida.
                             </p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--cosmic-rose);">
-                        <span class="jornada__numeral" aria-hidden="true">04</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="4"
+                        style="--ch-accent: var(--cosmic-rose);">
+                        <span class="jornada__num" aria-hidden="true">04</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
                                 <img src="./assets/images/O Despertar do Super Saiyajin.webp"
                                     alt="Goku Super Saiyajin com aura dourada flamejante" loading="lazy" width="800"
@@ -233,14 +239,16 @@
                             <p class="jornada__card-desc">Cabelos dourados, aura flamejante: pela primeira vez em mil anos,
                                 um Saiyajin alcança a transformação lendária. Goku enfim encara Freeza de igual para igual.
                             </p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--cosmic-cyan);">
-                        <span class="jornada__numeral" aria-hidden="true">05</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="5"
+                        style="--ch-accent: var(--cosmic-cyan);">
+                        <span class="jornada__num" aria-hidden="true">05</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
-                                <video autoplay loop muted playsinline preload="metadata">
+                                <video class="jornada__video" muted playsinline preload="metadata">
                                     <source src="./assets/videos/batalha-final.mp4" type="video/mp4">
                                 </video>
                             </div>
@@ -249,12 +257,14 @@
                             <p class="jornada__card-desc">Goku Super Saiyajin contra Freeza em 100% de seu poder. Um
                                 confronto colossal que define o destino do universo enquanto Namekusei se desfaz a cada
                                 golpe.</p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
 
-                    <div class="jornada__card-wrap" data-reveal style="--ch-accent: var(--accent-star);">
-                        <span class="jornada__numeral" aria-hidden="true">06</span>
-                        <article class="jornada__card">
+                    <article class="jornada__panel jornada__chapter" data-chapter="6"
+                        style="--ch-accent: var(--accent-star);">
+                        <span class="jornada__num" aria-hidden="true">06</span>
+                        <span class="jornada__node" aria-hidden="true"></span>
+                        <div class="jornada__card">
                             <div class="jornada__card-media">
                                 <img src="./assets/images/namekusei-destruicao.webp"
                                     alt="Namekusei se despedaçando em uma explosão cósmica" loading="lazy" width="800"
@@ -265,8 +275,8 @@
                             <p class="jornada__card-desc">Com o planeta à beira da explosão, Goku enfrenta seus últimos
                                 instantes contra o tirano e prova que a esperança — e a coragem — sempre encontram um
                                 caminho.</p>
-                        </article>
-                    </div>
+                        </div>
+                    </article>
                 </div>
             </div>
         </section>
